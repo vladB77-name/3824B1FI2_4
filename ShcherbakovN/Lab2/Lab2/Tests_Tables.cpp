@@ -1,5 +1,6 @@
 // Copyright 2026 Nikita
 
+#include <chrono>
 #include <string>
 #include <vector>
 
@@ -772,121 +773,241 @@ TEST(Test_TableWithPolynomial, HashTableWithPolynomial) {
   });
 }
 
-// Stress Tests:
+// Experiments Tests:
 
-TEST(Test_Stress, ManyInsertFindRemoveUnorderedTable) {
-  UnorderedTable<std::string, int> table;
-
-  const size_t N = 5000;
-
-  // Вставка записи:
-  for (size_t i = 0; i < N; ++i) {
-    std::string key = "key" + std::to_string(i);
-
-    table.insert(key, i);
+// Generating unique string keys
+std::vector<std::string> generateKeys(size_t n) {
+  std::vector<std::string> keys;
+  keys.resize(n);
+  for (size_t i = 0; i < n; ++i) {
+    keys[i] = "key" + std::to_string(i);
   }
-  EXPECT_EQ(table.size(), N);
-
-  // Поиск определённых записей:
-  for (int i = 0; i < N; i += 100) {
-    std::string key = "key" + std::to_string(i);
-
-    FindResultInt res = table.find(key);
-    EXPECT_NE(res.value, nullptr);
-    EXPECT_EQ(*res.value, i);
-  }
-
-  // Удаление каждой второй записи:
-  for (int i = 0; i < N; i += 2) {
-    std::string key = "key" + std::to_string(i);
-
-    table.remove(key);
-  }
-  EXPECT_EQ(table.size(), N / 2);
-
-  // Проверка отсутствия удалённых записей:
-  for (int i = 0; i < N; i += 2) {
-    std::string key = "key" + std::to_string(i);
-
-    FindResultInt res = table.find(key);
-    EXPECT_EQ(res.value, nullptr);
-  }
+  return keys;
 }
 
-TEST(Test_Stress, ManyInsertFindRemoveAVLTable) {
-  AVLTable<std::string, int> table;
-
-  const size_t N = 5000;
-
-  // Вставка записи:
-  for (size_t i = 0; i < N; ++i) {
-    std::string key = "key" + std::to_string(i);
-
-    table.insert(key, i);
+// Generation of simple polynomials (each contains one monomial)
+std::vector<Polynomial> generatePolynomials(size_t n) {
+  std::vector<Polynomial> polynoms;
+  polynoms.resize(n);
+  for (size_t i = 0; i < n; ++i) {
+    std::vector<std::pair<double, size_t>> source;
+    source.push_back({static_cast<double>(i + 1), i % 1000});
+    polynoms[i] = Polynomial(source);
   }
-  EXPECT_EQ(table.size(), N);
-
-  // Поиск определённых записей:
-  for (int i = 0; i < N; i += 100) {
-    std::string key = "key" + std::to_string(i);
-
-    FindResultInt res = table.find(key);
-    EXPECT_NE(res.value, nullptr);
-    EXPECT_EQ(*res.value, i);
-  }
-
-  // Удаление каждой второй записи:
-  for (int i = 0; i < N; i += 2) {
-    std::string key = "key" + std::to_string(i);
-
-    table.remove(key);
-  }
-  EXPECT_EQ(table.size(), N / 2);
-
-  // Проверка отсутствия удалённых записей:
-  for (int i = 0; i < N; i += 2) {
-    std::string key = "key" + std::to_string(i);
-
-    FindResultInt res = table.find(key);
-    EXPECT_EQ(res.value, nullptr);
-  }
+  return polynoms;
 }
 
-TEST(Test_Stress, ManyInsertFindRemoveHashTable) {
-  HashTable<std::string, int> table;
+TEST(ExperimentInsert, Comparison_of_tables) {
+  std::vector<size_t> volume;
+  volume.push_back(1000);
+  volume.push_back(5000);
+  volume.push_back(10000);
+  volume.push_back(20000);
 
-  const size_t N = 5000;
+  std::cout << "+------------------------+INSERT_EXPERIMENT+-------------------"
+               "-----+\n";
 
-  // Вставка записи:
-  for (size_t i = 0; i < N; ++i) {
-    std::string key = "key" + std::to_string(i);
+  for (size_t option = 0; option < volume.size(); ++option) {
+    size_t N = volume[option];
+    std::vector<std::string> keys = generateKeys(N);
+    std::vector<Polynomial> values = generatePolynomials(N);
 
-    table.insert(key, i);
+    size_t Unordered_opCount = 0;
+    size_t AVL_opCount = 0;
+    size_t Hash_opCount = 0;
+
+    UnorderedTable<std::string, Polynomial> Unordered_t;
+    AVLTable<std::string, Polynomial> AVL_t;
+    HashTable<std::string, Polynomial> Hash_t;
+
+    std::cout << "N = " << N << ":\n";
+
+    // UnorderedTable:
+    std::chrono::high_resolution_clock::time_point start =
+        std::chrono::high_resolution_clock::now();
+    for (size_t i = 0; i < N; ++i) {
+      Unordered_opCount += Unordered_t.insert(keys[i], values[i]);
+    }
+    std::chrono::high_resolution_clock::time_point end =
+        std::chrono::high_resolution_clock::now();
+
+    double Unordered_time = std::chrono::duration<double>(end - start).count();
+    std::cout << "Unordered: opCount = " << Unordered_opCount
+              << ", Time = " << Unordered_time << " seconds\n";
+
+    // AVLTable:
+    start = std::chrono::high_resolution_clock::now();
+    for (size_t i = 0; i < N; ++i) {
+      AVL_opCount += AVL_t.insert(keys[i], values[i]);
+    }
+    end = std::chrono::high_resolution_clock::now();
+
+    double AVL_time = std::chrono::duration<double>(end - start).count();
+    std::cout << "AVL: opCount = " << AVL_opCount << ", Time = " << AVL_time
+              << " seconds\n";
+
+    // HashTable:
+    start = std::chrono::high_resolution_clock::now();
+    for (size_t i = 0; i < N; ++i) {
+      Hash_opCount += Hash_t.insert(keys[i], values[i]);
+    }
+    end = std::chrono::high_resolution_clock::now();
+
+    double Hash_time = std::chrono::duration<double>(end - start).count();
+    std::cout << "Hash: opCount = " << Hash_opCount << ", Time = " << Hash_time
+              << " seconds\n\n";
   }
-  EXPECT_EQ(table.size(), N);
 
-  // Поиск определённых записей:
-  for (int i = 0; i < N; i += 100) {
-    std::string key = "key" + std::to_string(i);
+  std::cout << "+--------------------------------------------------------------"
+               "-----+\n";
+}
 
-    FindResultInt res = table.find(key);
-    EXPECT_NE(res.value, nullptr);
-    EXPECT_EQ(*res.value, i);
+TEST(ExperimentFind, Comparison_of_tables) {
+  std::vector<size_t> volume;
+  volume.push_back(1000);
+  volume.push_back(5000);
+  volume.push_back(10000);
+  volume.push_back(20000);
+
+  std::cout << "+-------------------------+FIND_EXPERIMENT+--------------------"
+               "-----+\n";
+
+  for (size_t option = 0; option < volume.size(); ++option) {
+    size_t N = volume[option];
+    std::vector<std::string> keys = generateKeys(N);
+    std::vector<Polynomial> values = generatePolynomials(N);
+
+    size_t Unordered_opCount = 0;
+    size_t AVL_opCount = 0;
+    size_t Hash_opCount = 0;
+
+    UnorderedTable<std::string, Polynomial> Unordered_t;
+    AVLTable<std::string, Polynomial> AVL_t;
+    HashTable<std::string, Polynomial> Hash_t;
+
+    // Filling tables with data:
+    for (size_t i = 0; i < N; ++i) {
+      Unordered_t.insert(keys[i], values[i]);
+      AVL_t.insert(keys[i], values[i]);
+      Hash_t.insert(keys[i], values[i]);
+    }
+
+    std::cout << "N = " << N << ":\n";
+
+    // UnorderedTable:
+    std::chrono::high_resolution_clock::time_point start =
+        std::chrono::high_resolution_clock::now();
+    for (size_t i = 0; i < N; ++i) {
+      typename BaseTable<std::string, Polynomial>::FindResult res =
+          Unordered_t.find(keys[i]);
+      Unordered_opCount += res.operationsCount;
+    }
+    std::chrono::high_resolution_clock::time_point end =
+        std::chrono::high_resolution_clock::now();
+
+    double Unordered_time = std::chrono::duration<double>(end - start).count();
+    std::cout << "Unordered: opCount = " << Unordered_opCount
+              << ", Time = " << Unordered_time << " seconds\n";
+
+    // AVLTable:
+    start = std::chrono::high_resolution_clock::now();
+    for (size_t i = 0; i < N; ++i) {
+      typename BaseTable<std::string, Polynomial>::FindResult res =
+          AVL_t.find(keys[i]);
+      AVL_opCount += res.operationsCount;
+    }
+    end = std::chrono::high_resolution_clock::now();
+
+    double AVL_time = std::chrono::duration<double>(end - start).count();
+    std::cout << "AVL: opCount = " << AVL_opCount << ", Time = " << AVL_time
+              << " seconds\n";
+
+    // HashTable:
+    start = std::chrono::high_resolution_clock::now();
+    for (size_t i = 0; i < N; ++i) {
+      typename BaseTable<std::string, Polynomial>::FindResult res =
+          Hash_t.find(keys[i]);
+      Hash_opCount += res.operationsCount;
+    }
+    end = std::chrono::high_resolution_clock::now();
+
+    double Hash_time = std::chrono::duration<double>(end - start).count();
+    std::cout << "Hash: opCount = " << Hash_opCount << ", Time = " << Hash_time
+              << " seconds\n\n";
   }
 
-  // Удаление каждой второй записи:
-  for (int i = 0; i < N; i += 2) {
-    std::string key = "key" + std::to_string(i);
+  std::cout << "+--------------------------------------------------------------"
+               "-----+\n";
+}
 
-    table.remove(key);
+TEST(ExperimentRemove, Comparison_of_tables) {
+  std::vector<size_t> volume;
+  volume.push_back(1000);
+  volume.push_back(5000);
+  volume.push_back(10000);
+  volume.push_back(20000);
+
+  std::cout << "+------------------------+REMOVE_EXPERIMENT+-------------------"
+               "-----+\n";
+
+  for (size_t option = 0; option < volume.size(); ++option) {
+    size_t N = volume[option];
+    std::vector<std::string> keys = generateKeys(N);
+    std::vector<Polynomial> values = generatePolynomials(N);
+
+    size_t Unordered_opCount = 0;
+    size_t AVL_opCount = 0;
+    size_t Hash_opCount = 0;
+
+    UnorderedTable<std::string, Polynomial> Unordered_t;
+    AVLTable<std::string, Polynomial> AVL_t;
+    HashTable<std::string, Polynomial> Hash_t;
+
+    // Filling tables with data:
+    for (size_t i = 0; i < N; ++i) {
+      Unordered_t.insert(keys[i], values[i]);
+      AVL_t.insert(keys[i], values[i]);
+      Hash_t.insert(keys[i], values[i]);
+    }
+
+    std::cout << "N = " << N << ":\n";
+
+    // UnorderedTable:
+    std::chrono::high_resolution_clock::time_point start =
+        std::chrono::high_resolution_clock::now();
+    for (size_t i = 0; i < N; ++i) {
+      Unordered_opCount += Unordered_t.remove(keys[i]);
+    }
+    std::chrono::high_resolution_clock::time_point end =
+        std::chrono::high_resolution_clock::now();
+
+    double Unordered_time = std::chrono::duration<double>(end - start).count();
+    std::cout << "Unordered: opCount = " << Unordered_opCount
+              << ", Time = " << Unordered_time << " seconds\n";
+
+    // AVLTable:
+    start = std::chrono::high_resolution_clock::now();
+    for (size_t i = 0; i < N; ++i) {
+      AVL_opCount += AVL_t.remove(keys[i]);
+    }
+    end = std::chrono::high_resolution_clock::now();
+
+    double AVL_time = std::chrono::duration<double>(end - start).count();
+    std::cout << "AVL: opCount = " << AVL_opCount << ", Time = " << AVL_time
+              << " seconds\n";
+
+    // HashTable:
+    start = std::chrono::high_resolution_clock::now();
+    for (size_t i = 0; i < N; ++i) {
+      Hash_opCount += Hash_t.remove(keys[i]);
+    }
+    end = std::chrono::high_resolution_clock::now();
+
+    double Hash_time = std::chrono::duration<double>(end - start).count();
+    std::cout << "Hash: opCount = " << Hash_opCount << ", Time = " << Hash_time
+              << " seconds\n\n";
   }
-  EXPECT_EQ(table.size(), N / 2);
 
-  // Проверка отсутствия удалённых записей:
-  for (int i = 0; i < N; i += 2) {
-    std::string key = "key" + std::to_string(i);
-
-    FindResultInt res = table.find(key);
-    EXPECT_EQ(res.value, nullptr);
-  }
+  std::cout << "+--------------------------------------------------------------"
+               "-----+\n";
 }
