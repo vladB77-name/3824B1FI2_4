@@ -1,6 +1,7 @@
 // Copyright 2026 Nikita
 
 #include <chrono>
+#include <iostream>
 #include <string>
 #include <vector>
 

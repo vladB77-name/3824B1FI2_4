@@ -670,14 +670,13 @@ int main() {
       std::getline(std::cin, file_name);
 
       while (true) {
-          if (file_name.empty()) {
-			  std::cout << "INVALID INPUT. The file name cannot be empty.\n";
-              std::cout << "Enter the file name:\n";
-              std::getline(std::cin, file_name);
-          }
-          else {
-              break;
-          }
+        if (file_name.empty()) {
+	      std::cout << "INVALID INPUT. The file name cannot be empty.\n";
+          std::cout << "Enter the file name:\n";
+          std::getline(std::cin, file_name);
+        } else {
+          break;
+        }
       }
 
       switch (typeValue) {
