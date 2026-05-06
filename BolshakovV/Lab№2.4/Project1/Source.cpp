@@ -190,7 +190,7 @@ int choice_insert_polinom() {
 
 
 
-void work_with_table(Polinom& pol_res, Polinom& change_pol1, Polinom& change_pol2, unordered_table<Polinom>& t1, AVLtable<Polinom>& t2, HeshTable<Polinom>& t3, Logging_operations<Polinom>& l) {
+void work_with_table(Polinom& pol_res, Polinom& change_pol1, Polinom& change_pol2, unordered_table<Polinom>& t1, AVLtable<Polinom>& t2, HashTable<Polinom>& t3, Logging_operations<Polinom>& l) {
 
 
 	bool flag_stop = 0;
@@ -389,7 +389,7 @@ void main_job(Polinom& pol1, Polinom& pol2, Logging_operations<Polinom>& l) {
 
 	unordered_table<Polinom> t1;
 	AVLtable<Polinom> t2;
-	HeshTable<Polinom> t3;
+	HashTable<Polinom> t3;
 
 	Polinom result;
 

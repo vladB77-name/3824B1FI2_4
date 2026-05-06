@@ -30,7 +30,7 @@ Polinom generate_pol(int id) {
 	return p;
 }
 
-std::vector< std::pair<size_t, double>> run_insert_experiment(std::vector<Record>& data, unordered_table<Polinom>& un, AVLtable<Polinom>& avl, HeshTable<Polinom>& hash) {
+std::vector< std::pair<size_t, double>> run_insert_experiment(std::vector<Record>& data, unordered_table<Polinom>& un, AVLtable<Polinom>& avl, HashTable<Polinom>& hash) {
 
 	std::pair<size_t, double> res_exp;
 	std::vector< std::pair<size_t, double>> Result; //unordered_table - 0, AVLtable - 1, HashTable - 2;
@@ -93,7 +93,7 @@ std::vector< std::pair<size_t, double>> run_insert_experiment(std::vector<Record
 	return Result;
 }
 /// Операция Delete
-std::vector< std::pair<size_t, double>> run_delete_experiment(std::vector<Record>& data, unordered_table<Polinom>& un, AVLtable<Polinom>& avl, HeshTable<Polinom>& hash) {
+std::vector< std::pair<size_t, double>> run_delete_experiment(std::vector<Record>& data, unordered_table<Polinom>& un, AVLtable<Polinom>& avl, HashTable<Polinom>& hash) {
 
 	std::pair<size_t, double> res_exp;
 	std::vector< std::pair<size_t, double>> Result; //unordered_table - 0, AVLtable - 1, HashTable - 2;
@@ -158,7 +158,7 @@ std::vector< std::pair<size_t, double>> run_delete_experiment(std::vector<Record
 
 
 /// Операция Find
-std::vector< std::pair<size_t, double>> run_find_experiment(std::vector<Record>& data, unordered_table<Polinom>& un, AVLtable<Polinom>& avl, HeshTable<Polinom>& hash) {
+std::vector< std::pair<size_t, double>> run_find_experiment(std::vector<Record>& data, unordered_table<Polinom>& un, AVLtable<Polinom>& avl, HashTable<Polinom>& hash) {
 
 	std::pair<size_t, double> res_exp;
 	std::vector< std::pair<size_t, double>> Result; //unordered_table - 0, AVLtable - 1, HashTable - 2;

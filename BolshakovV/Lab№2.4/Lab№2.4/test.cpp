@@ -220,7 +220,7 @@ TEST(AVLtable, test_destruct) {
 
 }
 TEST(test_hash_table, test_operations) {
-	HeshTable<Polinom> table;
+	HashTable<Polinom> table;
 
 	Polinom pol1;
 	pol1.add_monom(1, 111);
@@ -283,7 +283,7 @@ TEST(test_hash_table, test_operations) {
 TEST(logging_op, test_operations_file) {
 	unordered_table<Polinom> t1;
 	AVLtable<Polinom> t2;
-	HeshTable<Polinom> t3;
+	HashTable<Polinom> t3;
 
 	Logging_operations<Polinom> logg("Test");
 
@@ -354,12 +354,15 @@ int main() {
 
 	unordered_table<Polinom> un;
 	AVLtable<Polinom> avl;
-	HeshTable<Polinom> hash;
+	HashTable<Polinom> hash;
+
+	hash.Resize();
+	hash.Resize(); 
 
 	//генерация данных
 
 	std::vector<Record> data;
-	size_t data_size = 400; //после проведения эксперимента изменить (тогда нужно будет использовать Resize() для HashTable)
+	size_t data_size = 1900; //после проведения эксперимента изменить (тогда нужно будет использовать Resize() для HashTable)
 	data.reserve(data_size);
 
 	for (int i = 0; i < data_size; ++i) {
